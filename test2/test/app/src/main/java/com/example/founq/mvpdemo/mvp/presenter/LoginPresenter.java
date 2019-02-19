@@ -1,4 +1,4 @@
-package com.example.founq.mvpdemo.mvp.presenter;
+﻿package com.example.founq.mvpdemo.mvp.presenter;
 
 
 import android.text.TextUtils;
@@ -24,7 +24,7 @@ public class LoginPresenter extends BasePresenter<LoginActivity> implements Logi
     @Override
     public void dologin(String name, String password) {
         if(TextUtils.isEmpty(name)){
-            view.get().show("用户名不能为空！");//view.get()获取loginViewInter，为什么要get？
+            view.get().show("用户名不能为空！");
         }
         else if(TextUtils.isEmpty(password)){
             view.get().show("密码不能为空！");

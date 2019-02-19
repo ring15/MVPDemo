@@ -1,4 +1,4 @@
-package com.example.founq.mvpdemo.mvp.base;
+﻿package com.example.founq.mvpdemo.mvp.base;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -25,7 +25,7 @@ public abstract class BaseActivity <P extends BasePresenter> extends Activity im
 
     @Override
     public void bindView() {
-        presenter = createPresenter();//这边肯定是要声明的，可是为什么用抽象方法呢？
+        presenter = createPresenter();
         presenter.register(this);
     }
 
