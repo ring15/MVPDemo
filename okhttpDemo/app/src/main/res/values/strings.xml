@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">okhttpDemo</string>
-
-
-
-    <string name="test_result">返回值</string>
-    <string name="test_post">post请求</string>
-    <string name="test_get">get请求</string>
-</resources>
