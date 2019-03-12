@@ -1,7 +1,0 @@
-<resources>
-    <string name="app_name">Iweather</string>
-    <string name="country">中国</string>
-    <string name="province">省</string>
-    <string name="city">市</string>
-    <string name="search">输入要搜索的城市名称</string>
-</resources>
