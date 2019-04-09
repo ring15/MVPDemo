@@ -1,25 +1,28 @@
 package com.example.founq.gaitrecognition;
 
-import android.content.Context;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.founq.gaitrecognition.base.BaseActivity;
 import com.example.founq.gaitrecognition.mvp.Contract;
 import com.example.founq.gaitrecognition.mvp.prsenter.MainPresenter;
 
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends BaseActivity<MainPresenter> implements View.OnClickListener, Contract.View, SensorEventListener {
 
@@ -29,6 +32,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements View.On
     private boolean isRecord = false;
     private SensorManager sensorManager;
     private Sensor accelerometer;
+    private static final int mRequestCode = 0x01;
+    private File newFile = null;
 
 
     @Override
@@ -71,27 +76,11 @@ public class MainActivity extends BaseActivity<MainPresenter> implements View.On
 
     @Override
     public void show() {
-        FileOutputStream fileOutputStream = null;
-        BufferedWriter bufferedWriter = null;
-        String fileName = "gait";
-        try {
-            fileOutputStream = openFileOutput(fileName, Context.MODE_APPEND);
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
-            bufferedWriter.write("加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z + "\n");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (bufferedWriter != null) {
-                try {
-                    bufferedWriter.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, mRequestCode);
+        } else {
+            presenter.writeToFile(newFile, "加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z + "\n");
         }
-
         test.setText("加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z);
     }
 
@@ -101,6 +90,9 @@ public class MainActivity extends BaseActivity<MainPresenter> implements View.On
         传感器事件给出的时间间隔*/
         sensorManager.registerListener(this, accelerometer, 2000000);
         btnInput.setText(R.string.input_gait_info_stop);
+        Date date = new Date();
+        String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(date.getTime());
+        newFile = new File(getExternalFilesDir(""), fileName + ".txt");
     }
 
     @Override
@@ -124,5 +116,21 @@ public class MainActivity extends BaseActivity<MainPresenter> implements View.On
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case mRequestCode:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    presenter.writeToFile(newFile, "加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z + "\n");
+                } else {
+                    Toast.makeText(MainActivity.this, "you denied the permission", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
