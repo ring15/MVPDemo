@@ -12,16 +12,17 @@ import com.example.founq.iweather.weather.WeatherContract;
 import com.example.founq.iweather.weather.model.WeatherModel;
 import com.example.founq.iweather.weather.view.MainActivity;
 
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class WeatherPresenter extends BasePresenter<MainActivity> implements WeatherContract.WeatherPresenterInterface {
 
     WeatherContract.WeatherModelInterface modelInterface = new WeatherModel();
-    private String strOther;
     private Weather weather;
 
 
@@ -47,25 +48,8 @@ public class WeatherPresenter extends BasePresenter<MainActivity> implements Wea
         modelInterface.getWeather(city, new Listener<String>() {
             @Override
             public void onSuccess(String data, Object... params) {
-                strOther = data;
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... voids) {
-                        weather = Utility.handleWeatherResponse(strOther);
-                        return null;
-                    }
-
-                    @Override
-                    protected void onPostExecute(Void aVoid) {
-                        super.onPostExecute(aVoid);
-                        if (weather != null) {
-                            view.get().show(weather);
-                        } else {
-                            view.get().showMassage();
-                        }
-                    }
-
-                }.execute();
+                WeatherAsyncTask mWeatherAsyncTask = new WeatherAsyncTask(WeatherPresenter.this,city);
+                mWeatherAsyncTask.execute(data);
             }
 
             @Override
@@ -73,8 +57,33 @@ public class WeatherPresenter extends BasePresenter<MainActivity> implements Wea
 
             }
         });
+    }
 
+    private static class WeatherAsyncTask extends AsyncTask<String, Void, Weather>{
 
+        private WeakReference<WeatherPresenter> mPresenterWeakReference;
+        private String city;
+
+        public WeatherAsyncTask(WeatherPresenter presenter, String city){
+            mPresenterWeakReference = new WeakReference<>(presenter);
+            this.city = city;
+        }
+
+        @Override
+        protected Weather doInBackground(String... strings) {
+            return Utility.handleWeatherResponse(strings[0]);
+        }
+
+        @Override
+        protected void onPostExecute(Weather weather) {
+            super.onPostExecute(weather);
+            if (weather != null){
+                mPresenterWeakReference.get().weather = weather;
+                mPresenterWeakReference.get().view.get().show(weather,city);
+            }else {
+                mPresenterWeakReference.get().view.get().showMassage();
+            }
+        }
     }
 
     @Override
@@ -88,7 +97,7 @@ public class WeatherPresenter extends BasePresenter<MainActivity> implements Wea
 
     @Override
     public void judgTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH", Locale.getDefault());
         String hour = sdf.format(new Date());
         int k = Integer.parseInt(hour);
         if ((k >= 0 && k < 6) || (k >= 18 && k < 24)) {

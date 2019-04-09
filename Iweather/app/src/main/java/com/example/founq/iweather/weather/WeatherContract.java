@@ -14,17 +14,25 @@ public interface WeatherContract {
 
     interface WeatherPresenterInterface {
         void getModel(String city);
+
         void showWeather(String fa, String fb);
+
         void judgTime();
+
         void judeWeather();
     }
 
     interface WeatherViewInterface {
-        void show(Weather weather);
+        void show(Weather weather, String mCity);
+
         void showDay();
+
         void shownight();
+
         void showImage(int i);
+
         void showImages(List<Integer> contant);
+
         void showMassage();
     }
 

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -32,30 +33,67 @@ import java.util.List;
 
 public class MainActivity extends BaseActivity<WeatherPresenter> implements WeatherContract.WeatherViewInterface {
 
-    TextView tvTitle, tvToday, tvWeather, tvTemp, tvCurrentTemp, tvWndDirection, tvWindPower, tvHumidity, tvUv, tvDressIndex, tvDressAdvice, tvExercise, tvWash, tvTravel;
-    RecyclerView rcySeven;
-    ImageView ivWeather;
-    LinearLayout layoutMain, layoutChange;
-    SearchView searchView;
-    Weather weather = new Weather();
-    MainAdapter mainAdapter;
-    List<Integer> contant = new ArrayList<>();
+    private TextView tvTitle, tvToday, tvWeather, tvTemp, tvCurrentTemp, tvWndDirection, tvWindPower, tvHumidity, tvUv, tvDressIndex, tvDressAdvice, tvExercise, tvWash, tvTravel;
+    private RecyclerView rcySeven;
+    private ImageView ivWeather;
+    private LinearLayout layoutMain, layoutChange;
+    private SearchView searchView;
+    private SwipeRefreshLayout refresh;
 
-    int[] imageIcon = {R.drawable.icon_1,R.drawable.icon_2,R.drawable.icon_3,R.drawable.icon_4,R.drawable.icon_5,R.drawable.icon_6,R.drawable.icon_7,R.drawable.icon_8,R.drawable.icon_9,R.drawable.icon_10,
-            R.drawable.icon_11,R.drawable.icon_12,R.drawable.icon_13,R.drawable.icon_14,R.drawable.icon_15,R.drawable.icon_16,R.drawable.icon_17,R.drawable.icon_18,R.drawable.icon_19,R.drawable.icon_20,
-            R.drawable.icon_21,R.drawable.icon_22,R.drawable.icon_23,R.drawable.icon_24,R.drawable.icon_25,R.drawable.icon_26,R.drawable.icon_27,R.drawable.icon_28,R.drawable.icon_29,R.drawable.icon_30,
-            R.drawable.icon_31,R.drawable.icon_32,R.drawable.icon_33};
+    private Weather weather = new Weather();
+    private MainAdapter mainAdapter;
+    private List<Integer> contant = new ArrayList<>();
+    private String cityString;
+
+    private int[] imageIcon = {R.drawable.icon_1, R.drawable.icon_2, R.drawable.icon_3, R.drawable.icon_4, R.drawable.icon_5, R.drawable.icon_6, R.drawable.icon_7, R.drawable.icon_8, R.drawable.icon_9, R.drawable.icon_10,
+            R.drawable.icon_11, R.drawable.icon_12, R.drawable.icon_13, R.drawable.icon_14, R.drawable.icon_15, R.drawable.icon_16, R.drawable.icon_17, R.drawable.icon_18, R.drawable.icon_19, R.drawable.icon_20,
+            R.drawable.icon_21, R.drawable.icon_22, R.drawable.icon_23, R.drawable.icon_24, R.drawable.icon_25, R.drawable.icon_26, R.drawable.icon_27, R.drawable.icon_28, R.drawable.icon_29, R.drawable.icon_30,
+            R.drawable.icon_31, R.drawable.icon_32, R.drawable.icon_33};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         findview();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String string = sharedPreferences.getString("city", null);
-        presenter.getModel(string);
-        tvTitle.setText(string);
+        init();
 
+    }
+
+    private void init() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        cityString = sharedPreferences.getString("city", null);
+        presenter.getModel(cityString);
+        tvTitle.setText(cityString);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            // 当点击搜索按钮时触发该方法
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                presenter.getModel(query);
+                return false;
+            }
+
+            // 当搜索内容改变时触发该方法
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        presenter.judgTime();
+        layoutChange.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ChooseProvinceActivity.class);
+                intent.putExtra("from", false);
+                startActivity(intent);
+            }
+        });
+        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                presenter.getModel(cityString);
+            }
+        });
     }
 
     private void findview() {
@@ -63,6 +101,7 @@ public class MainActivity extends BaseActivity<WeatherPresenter> implements Weat
         layoutChange = findViewById(R.id.layout_change);
         layoutMain = findViewById(R.id.layou_main);
         searchView = findViewById(R.id.search);
+        refresh = findViewById(R.id.refresh);
         tvToday = findViewById(R.id.tv_today);
         tvWeather = findViewById(R.id.tv_weather);
         tvTemp = findViewById(R.id.tv_temp);
@@ -78,29 +117,6 @@ public class MainActivity extends BaseActivity<WeatherPresenter> implements Weat
         tvTravel = findViewById(R.id.tv_travel);
         rcySeven = findViewById(R.id.rcy_seven);
         ivWeather = findViewById(R.id.iv_weather);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            // 当点击搜索按钮时触发该方法
-             @Override
-             public boolean onQueryTextSubmit(String query) {
-                 presenter.getModel(query);
-                 return false;
-             }
-             // 当搜索内容改变时触发该方法
-             @Override
-             public boolean onQueryTextChange(String newText) {
-                 return false;
-             }
-        });
-
-        presenter.judgTime();
-        layoutChange.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ChooseProvinceActivity.class);
-                intent.putExtra("from", false);
-                startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -109,12 +125,14 @@ public class MainActivity extends BaseActivity<WeatherPresenter> implements Weat
     }
 
     @Override
-    public void show(Weather weather) {
+    public void show(Weather weather, String mCity) {
+        cityString = mCity;
         this.weather = weather;
+        refresh.setRefreshing(false);
         tvTitle.setText(weather.getTodayWeather().getCity());
-        tvToday.setText(weather.getTodayWeather().getDate_y()+"   "+weather.getTodayWeather().getWeek());
+        tvToday.setText(weather.getTodayWeather().getDate_y() + "   " + weather.getTodayWeather().getWeek());
         tvWeather.setText(weather.getTodayWeather().getWeather());
-        tvTemp.setText(weather.getCurrentWeather().getTemp()+"°");
+        tvTemp.setText(weather.getCurrentWeather().getTemp() + "°");
         tvCurrentTemp.setText(weather.getTodayWeather().getTemperature());
         tvWndDirection.setText(weather.getCurrentWeather().getWind_direction());
         tvWindPower.setText(weather.getCurrentWeather().getWind_strength());
@@ -126,7 +144,7 @@ public class MainActivity extends BaseActivity<WeatherPresenter> implements Weat
         tvWash.setText(weather.getTodayWeather().getWash_index());
         tvTravel.setText(weather.getTodayWeather().getTravel_index());
         presenter.judeWeather();
-        mainAdapter = new MainAdapter(this,weather.getFutureWeathers(),contant);
+        mainAdapter = new MainAdapter(this, weather.getFutureWeathers(), contant);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rcySeven.setLayoutManager(layoutManager);
@@ -134,7 +152,7 @@ public class MainActivity extends BaseActivity<WeatherPresenter> implements Weat
         presenter.showWeather(weather.getTodayWeather().getWeather_id().getFa(), weather.getTodayWeather().getWeather_id().getFb());
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("city",weather.getTodayWeather().getCity());
+        editor.putString("city", weather.getTodayWeather().getCity());
         editor.commit();
     }
 
@@ -160,7 +178,7 @@ public class MainActivity extends BaseActivity<WeatherPresenter> implements Weat
 
     @Override
     public void showMassage() {
-        Toast.makeText(this,"获取信息失败",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "获取信息失败", Toast.LENGTH_SHORT).show();
     }
 
 
