@@ -3,7 +3,6 @@ package com.example.founq.iweather.choosecountry.presenter;
 import android.os.AsyncTask;
 
 import com.example.founq.iweather.base.BasePresenter;
-import com.example.founq.iweather.choosecity.presenter.ChooseCityPresenter;
 import com.example.founq.iweather.choosecountry.CountryContract;
 import com.example.founq.iweather.choosecountry.model.ChooseCountryModel;
 import com.example.founq.iweather.choosecountry.view.ChooseCountryActivity;
@@ -18,7 +17,6 @@ public class ChooseCountryPresenter extends BasePresenter<ChooseCountryActivity>
 
     @Override
     public void getModel(int code, int citycode) {
-
         CountryAsyncTask mCountryAsyncTask = new CountryAsyncTask(ChooseCountryPresenter.this);
         mCountryAsyncTask.execute(code, citycode);
     }

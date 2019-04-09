@@ -8,30 +8,40 @@ import com.example.founq.iweather.chooseprovince.model.ChooseProvinceModel;
 import com.example.founq.iweather.chooseprovince.view.ChooseProvinceActivity;
 import com.example.founq.iweather.data.Utility;
 
+import java.lang.ref.WeakReference;
+
 public class ChooseProvincePresenter extends BasePresenter<ChooseProvinceActivity> implements ProvinceContract.ProvincePresenterInterface {
 
     ProvinceContract.ProvinceModelInterface chooseProvinceModel = new ChooseProvinceModel();
-    private String strOther;
 
     @Override
     public void getModel() {
 
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                strOther = chooseProvinceModel.getProvince();
-                return null;
+        ProvinceAsyncTask mProvinceAsyncTask = new ProvinceAsyncTask(ChooseProvincePresenter.this);
+        mProvinceAsyncTask.execute();
+    }
+
+    private static class ProvinceAsyncTask extends AsyncTask<Void, Void, Boolean> {
+
+        private WeakReference<ChooseProvincePresenter> mPresenterWeakReference;
+        private String strOther;
+
+        public ProvinceAsyncTask(ChooseProvincePresenter presenter) {
+            mPresenterWeakReference = new WeakReference<>(presenter);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            strOther = mPresenterWeakReference.get().chooseProvinceModel.getProvince();
+            return Utility.handleProvinceResponse(strOther);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            if (aBoolean) {
+                mPresenterWeakReference.get().view.get().show();
             }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                if(Utility.handleProvinceResponse(strOther)){
-                    view.get().show();
-                }
-            }
-
-        }.execute();
-
+        }
     }
 }
