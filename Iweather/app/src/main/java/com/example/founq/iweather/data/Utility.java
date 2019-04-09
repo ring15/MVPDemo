@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Utility {
 
@@ -108,25 +109,26 @@ public class Utility {
             com.alibaba.fastjson.JSONObject root = JSON.parseObject(response);    //解析根节点
             String status = root.getString("reason");   //解析状态
             com.alibaba.fastjson.JSONObject data = root.getJSONObject("result");   //解析data节点
-            com.alibaba.fastjson.JSONObject sk = data.getJSONObject("sk");
-            CurrentWeather currentWeather = JSON.toJavaObject(sk,CurrentWeather.class);
-            com.alibaba.fastjson.JSONObject today = data.getJSONObject("today");
-            TodayWeather todayWeather = JSON.toJavaObject(today,TodayWeather.class);
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
-            Date date = new Date(System.currentTimeMillis());
-            Calendar calendar = Calendar.getInstance();
-            com.alibaba.fastjson.JSONObject future = data.getJSONObject("future");
-            List<FutureWeather> futureWeathers = new ArrayList<>();
-            for(int i =0; i<7; i++){
-                com.alibaba.fastjson.JSONObject first = future.getJSONObject("day_"+simpleDateFormat.format(calendar.getTime()));
-                futureWeathers.add(JSON.toJavaObject(first,FutureWeather.class));
-                calendar.add(Calendar.DAY_OF_MONTH,1);
+            if (data != null){
+                com.alibaba.fastjson.JSONObject sk = data.getJSONObject("sk");
+                CurrentWeather currentWeather = JSON.toJavaObject(sk,CurrentWeather.class);
+                com.alibaba.fastjson.JSONObject today = data.getJSONObject("today");
+                TodayWeather todayWeather = JSON.toJavaObject(today,TodayWeather.class);
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+                Calendar calendar = Calendar.getInstance();
+                com.alibaba.fastjson.JSONObject future = data.getJSONObject("future");
+                List<FutureWeather> futureWeathers = new ArrayList<>();
+                for(int i =0; i<7; i++){
+                    com.alibaba.fastjson.JSONObject first = future.getJSONObject("day_"+simpleDateFormat.format(calendar.getTime()));
+                    futureWeathers.add(JSON.toJavaObject(first,FutureWeather.class));
+                    calendar.add(Calendar.DAY_OF_MONTH,1);
+                }
+                Weather weather = new Weather();
+                weather.setCurrentWeather(currentWeather);
+                weather.setTodayWeather(todayWeather);
+                weather.setFutureWeathers(futureWeathers);
+                return weather;
             }
-            Weather weather = new Weather();
-            weather.setCurrentWeather(currentWeather);
-            weather.setTodayWeather(todayWeather);
-            weather.setFutureWeathers(futureWeathers);
-            return weather;
         } catch (Exception e) {
             e.printStackTrace();
         }

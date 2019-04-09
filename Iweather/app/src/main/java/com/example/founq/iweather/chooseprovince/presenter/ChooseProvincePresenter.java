@@ -39,7 +39,7 @@ public class ChooseProvincePresenter extends BasePresenter<ChooseProvinceActivit
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            if (aBoolean) {
+            if (mPresenterWeakReference.get().isAttach && aBoolean) {
                 mPresenterWeakReference.get().view.get().show();
             }
         }

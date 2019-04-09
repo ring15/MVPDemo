@@ -77,11 +77,13 @@ public class WeatherPresenter extends BasePresenter<MainActivity> implements Wea
         @Override
         protected void onPostExecute(Weather weather) {
             super.onPostExecute(weather);
-            if (weather != null){
-                mPresenterWeakReference.get().weather = weather;
-                mPresenterWeakReference.get().view.get().show(weather,city);
-            }else {
-                mPresenterWeakReference.get().view.get().showMassage();
+            if (mPresenterWeakReference.get().isAttach){
+                if (weather != null){
+                    mPresenterWeakReference.get().weather = weather;
+                    mPresenterWeakReference.get().view.get().show(weather,city);
+                }else {
+                    mPresenterWeakReference.get().view.get().showMassage();
+                }
             }
         }
     }

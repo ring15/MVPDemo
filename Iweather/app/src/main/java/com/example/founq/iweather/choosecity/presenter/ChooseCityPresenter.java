@@ -22,12 +22,12 @@ public class ChooseCityPresenter extends BasePresenter<ChooseCityActivity> imple
         mCityAsyncTask.execute(code);
     }
 
-    private static class CityAsyncTask extends AsyncTask<Integer, Void, Boolean>{
+    private static class CityAsyncTask extends AsyncTask<Integer, Void, Boolean> {
 
         private WeakReference<ChooseCityPresenter> mPresenterWeakReference;
         private String strOther;
 
-        public CityAsyncTask(ChooseCityPresenter presenter){
+        public CityAsyncTask(ChooseCityPresenter presenter) {
             mPresenterWeakReference = new WeakReference<>(presenter);
         }
 
@@ -40,7 +40,7 @@ public class ChooseCityPresenter extends BasePresenter<ChooseCityActivity> imple
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
-            if (aBoolean){
+            if (mPresenterWeakReference.get().isAttach && aBoolean) {
                 mPresenterWeakReference.get().view.get().show();
             }
         }
