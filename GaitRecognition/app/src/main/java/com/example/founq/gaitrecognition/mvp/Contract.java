@@ -22,6 +22,8 @@ public interface Contract {
         void getGaitInfo(boolean isRecord);
 
         void writeToFile(File file, String content);
+
+        void copyFile(File oldFile, File newFile);
     }
 
 }
