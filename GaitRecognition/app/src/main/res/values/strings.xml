@@ -3,6 +3,7 @@
 
 
     <string name="input_gait_info">录入步态信息</string>
+    <string name="input_gait_info_stop">停止录入</string>
     <string name="recognize_gait_info">识别步态信息</string>
     <string name="get_result">获取返回信息</string>
 </resources>

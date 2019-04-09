@@ -9,11 +9,12 @@ public interface Contract {
     interface View{
         void show();
         void showGaitInfo();
+        void stopRecord();
     }
 
     interface Presenter{
         void pass();
-        void getGaitInfo();
+        void getGaitInfo(boolean isRecord);
     }
 
 }

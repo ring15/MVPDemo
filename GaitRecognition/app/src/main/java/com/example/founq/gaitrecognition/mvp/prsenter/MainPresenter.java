@@ -13,7 +13,11 @@ public class MainPresenter extends BasePresenter<MainActivity> implements Contra
     }
 
     @Override
-    public void getGaitInfo() {
-        view.get().showGaitInfo();
+    public void getGaitInfo(boolean isRecord) {
+        if (isRecord){
+            view.get().stopRecord();
+        }else {
+            view.get().showGaitInfo();
+        }
     }
 }
