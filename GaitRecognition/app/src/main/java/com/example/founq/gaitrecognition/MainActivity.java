@@ -24,7 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends BaseActivity<MainPresenter> implements View.OnClickListener, Contract.View, SensorEventListener {
+public class MainActivity extends BaseActivity<MainPresenter>
+        implements View.OnClickListener, Contract.View, SensorEventListener {
 
     private Button btnInput, btnRecognize, btnGet;
     private TextView test;
@@ -101,10 +102,13 @@ public class MainActivity extends BaseActivity<MainPresenter> implements View.On
 
     @Override
     public void show() {
-        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, mRequestCode);
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, mRequestCode);
         } else {
-            presenter.writeToFile(mOldFile, "加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z + "\n");
+            presenter.writeToFile(mOldFile,
+                    "加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z + "\n");
         }
         test.setText("加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z);
     }
@@ -116,7 +120,8 @@ public class MainActivity extends BaseActivity<MainPresenter> implements View.On
         sensorManager.registerListener(this, accelerometer, 2000000);
         btnInput.setText(R.string.input_gait_info_stop);
         Date date = new Date();
-        String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(date.getTime());
+        String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss",
+                Locale.getDefault()).format(date.getTime());
         mOldFile = new File(getExternalFilesDir(""), fileName + ".txt");
     }
 
@@ -149,9 +154,11 @@ public class MainActivity extends BaseActivity<MainPresenter> implements View.On
         switch (requestCode) {
             case mRequestCode:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    presenter.writeToFile(mOldFile, "加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z + "\n");
+                    presenter.writeToFile(mOldFile,
+                            "加速度信息   X：" + X + "    Y:" + Y + "   Z:" + Z + "\n");
                 } else {
-                    Toast.makeText(MainActivity.this, "you denied the permission", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this,
+                            "you denied the permission", Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:
