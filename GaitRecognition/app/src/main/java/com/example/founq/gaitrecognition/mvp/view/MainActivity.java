@@ -1,4 +1,4 @@
-package com.example.founq.gaitrecognition;
+package com.example.founq.gaitrecognition.mvp.view;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -10,19 +10,29 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.founq.gaitrecognition.R;
 import com.example.founq.gaitrecognition.base.BaseActivity;
+import com.example.founq.gaitrecognition.base.BaseRequst;
 import com.example.founq.gaitrecognition.mvp.Contract;
+import com.example.founq.gaitrecognition.mvp.model.TestServer;
 import com.example.founq.gaitrecognition.mvp.prsenter.MainPresenter;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends BaseActivity<MainPresenter>
         implements View.OnClickListener, Contract.View, SensorEventListener {
@@ -36,6 +46,7 @@ public class MainActivity extends BaseActivity<MainPresenter>
     private static final int mRequestCode = 0x01;
     private File mOldFile = null;
     private File mNewFile = null;
+    private String fileName = null;
 
 
     @Override
@@ -64,7 +75,7 @@ public class MainActivity extends BaseActivity<MainPresenter>
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_input:
-                presenter.getGaitInfo(isRecord);
+                presenter.saveGaitInfo(isRecord);
                 isRecord = !isRecord;
                 break;
             case R.id.btn_recognize:
@@ -73,32 +84,12 @@ public class MainActivity extends BaseActivity<MainPresenter>
                 presenter.copyFile(mOldFile,mNewFile);
                 break;
             case R.id.btn_get:
+                presenter.gaitInfo(mOldFile);
                 break;
             default:
                 break;
         }
     }
-//
-//    public ArrayList<String> readFileData(){
-//        ArrayList<String> arrayList=new ArrayList<>();
-//        BufferedReader reader=null;
-//        FileReader fileReader=null;
-//        File file=new File(getExternalFilesDir(""), "20190409_034451");
-//        try {
-//            fileReader=new FileReader(file);
-//            reader=new BufferedReader(fileReader);
-//            String line="";
-//            while ((line=reader.readLine())!=null){
-//                arrayList.add(line);
-//            }
-//            return arrayList;
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
     @Override
     public void show() {
@@ -114,15 +105,20 @@ public class MainActivity extends BaseActivity<MainPresenter>
     }
 
     @Override
-    public void showGaitInfo() {
+    public void savedGaitInfo() {
         /*rate的单位是microsecond，也就是10^-6。
         传感器事件给出的时间间隔*/
         sensorManager.registerListener(this, accelerometer, 2000000);
         btnInput.setText(R.string.input_gait_info_stop);
         Date date = new Date();
-        String fileName = new SimpleDateFormat("yyyyMMdd_HHmmss",
+        fileName = new SimpleDateFormat("yyyyMMdd_HHmmss",
                 Locale.getDefault()).format(date.getTime());
         mOldFile = new File(getExternalFilesDir(""), fileName + ".txt");
+    }
+
+    @Override
+    public void showGaitInfo(String result) {
+        Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
     }
 
     @Override

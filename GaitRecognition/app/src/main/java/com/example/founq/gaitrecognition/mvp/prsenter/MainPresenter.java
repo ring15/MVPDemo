@@ -1,6 +1,8 @@
 package com.example.founq.gaitrecognition.mvp.prsenter;
 
-import com.example.founq.gaitrecognition.MainActivity;
+import com.example.founq.gaitrecognition.base.Listener;
+import com.example.founq.gaitrecognition.mvp.model.MainModel;
+import com.example.founq.gaitrecognition.mvp.view.MainActivity;
 import com.example.founq.gaitrecognition.base.BasePresenter;
 import com.example.founq.gaitrecognition.mvp.Contract;
 
@@ -21,6 +23,11 @@ public class MainPresenter extends BasePresenter<MainActivity> implements Contra
     private BufferedWriter mWriter = null;
     private FileWriter mFileWriter = null;
     private boolean isFirst = true;
+    private Contract.Model mModel;
+
+    public MainPresenter() {
+        mModel = new MainModel();
+    }
 
     @Override
     public void pass() {
@@ -28,7 +35,7 @@ public class MainPresenter extends BasePresenter<MainActivity> implements Contra
     }
 
     @Override
-    public void getGaitInfo(boolean isRecord) {
+    public void saveGaitInfo(boolean isRecord) {
         if (isRecord) {
             view.get().stopRecord();
             if (mWriter != null) {
@@ -40,8 +47,23 @@ public class MainPresenter extends BasePresenter<MainActivity> implements Contra
                 }
             }
         } else {
-            view.get().showGaitInfo();
+            view.get().savedGaitInfo();
         }
+    }
+
+    @Override
+    public void gaitInfo(File file) {
+        mModel.postGait(file, new Listener() {
+            @Override
+            public void Success(Object body, String... strings) {
+                view.get().showGaitInfo((String) body);
+            }
+
+            @Override
+            public void Failed(String fail) {
+                view.get().showGaitInfo(fail);
+            }
+        });
     }
 
     @Override
